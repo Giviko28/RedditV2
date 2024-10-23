@@ -26,6 +26,7 @@ namespace Reddit.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
         {
+            throw new Exception("Trulailas fuli rat unda");
             return await _context.Comments.ToListAsync();
         }
 

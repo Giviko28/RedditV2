@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Reddit;
+using Reddit.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,9 +25,9 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
         .AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod()));
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -34,6 +35,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseCors();
