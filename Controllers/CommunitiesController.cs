@@ -24,9 +24,53 @@ namespace Reddit.Controllers
 
         // GET: api/Communities
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Community>>> GetCommunities()
+        public async Task<ActionResult<IEnumerable<Community>>> GetCommunities(string? searchKey, string? sortKey, bool? isAscending, int pageNumber = 1, int pageSize = 5)
         {
-            return await _context.Communities.ToListAsync();
+            var communities = _context.Communities.AsQueryable();
+
+            bool ascending = isAscending ?? true;
+
+
+            if (searchKey is not null)
+            {
+                communities = communities.Where(c => c.Name.Contains(searchKey) || c.Description.Contains(searchKey));
+            }
+
+            if (sortKey is not null)
+            {
+                switch (sortKey.ToLower())
+                {
+                    case "createdat":
+                        communities = ascending
+                            ? communities.OrderBy(c => c.CreatedAt)
+                            : communities.OrderByDescending(c => c.CreatedAt);
+                        break;
+                    case "postscount":
+                        communities = ascending
+                            ? communities.OrderBy(c => c.Posts.Count())
+                            : communities.OrderByDescending(c => c.Posts.Count());
+                        break;
+                    case "subscriberscount":
+                        communities = ascending
+                            ? communities.OrderBy(c => c.Subscribers.Count())
+                            : communities.OrderByDescending(c => c.Subscribers.Count());
+                        break;
+                    default:
+                        communities = ascending
+                            ? communities.OrderBy(c => c.Id)
+                            : communities.OrderByDescending(c => c.Id);
+                        break;
+                }
+            }
+
+
+            if (pageSize > 50)
+            {
+                pageSize = 50;
+            }
+            communities = communities.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            return  await communities.ToListAsync();
         }
 
         // GET: api/Communities/5
